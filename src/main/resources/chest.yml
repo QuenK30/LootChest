@@ -1,0 +1,56 @@
+itemspecial: #Une liste d'items spéciaux
+  diamond_axe: #id de l'item
+    type: DIAMOND_AXE #Type de l'item
+    position: 10 #Position de l'item dans le coffre
+    name: "Hache cheaté" #Nom de l'item
+    chest: "chest_one" #Nom du coffre où l'item doit être placé
+    lore: #Une liste de lignes de lore
+      - "&7Cet item est spécial"
+      - "&7Il ne peut être obtenu que"
+      - "&7par un joueur qui a un block de bedrock"
+      - "&7dans son inventaire"
+    enchantments:
+      - "sharpness;10" #Enchantement;Niveau
+    attributes:
+      - "GENERIC_MOVEMENT_SPEED;0.08" #Attribut;Valeur
+    unbreakable: true #Si l'item est indestructible ou non
+    amount: 1 #Quantité
+    attributesinvisible: true #Si les attributs sont invisibles ou non
+    enchantmentsinvisible: true #Si les enchantements sont invisibles ou non
+  golden_carrot:
+    type: GOLDEN_CARROT
+    position: 11
+    name: "Carotte d'or by QuenK"
+    chest: "chest_two"
+    lore:
+      - "&7Cet item est spécial"
+      - "&7Il ne peut être obtenu que"
+      - "&7par un joueur qui a un block de bedrock"
+      - "&7dans son inventaire"
+    enchantments:
+      - "knockback;2"
+    attributes:
+      - "GENERIC_MOVEMENT_SPEED;80"
+    unbreakable: true
+    amount: 1
+    attributesinvisible: true #Si les attributs sont invisibles ou non
+    enchantmentsinvisible: true #Si les enchantements sont invisibles ou non
+chest:
+  chest_one:
+    name: "Coffre 1" #Nom du coffre
+    chance: 20 #Chance de drop (Toujours mettre un entier entre 1 et 100)
+    special: false #Si le coffre est spécial ou non (Ouvrable que par un joueur qui a un block de bedrock)
+    items: #Une liste de ce que tu veux mettre dans le coffre
+      - EGG;1 #Items;Quantité;Nom;Texture
+      - DIAMOND;1
+      - PLAYER_HEAD;1;Topaz Gem;eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZGQzYTI0MmRhM2FkYjE2MzE1Y2UyOWUxOWY3OWNjMjJmMzQwNTEwNTNhYmRhZDU2NjhlYWNhYWMxZWEwYjIyMiJ9fX0=
+  chest_two:
+    name: "Coffre 2"
+    chance: 22
+    special: true
+    items:
+      - EGG;1
+      - DIAMOND;4
+      - GOLD_INGOT;1;or;
+      - EMERALD;1
+      - EGG;5

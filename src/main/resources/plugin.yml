@@ -1,0 +1,11 @@
+name: LootChest
+version: '${project.version}'
+main: fr.quenk.lootchest.LootChest
+api-version: 1.19
+description: Un plugin qui permet de créer des coffres qui donnent des items aléatoires à chaque ouverture
+author: QuenK
+commands:
+    lootchest:
+        description: Commande principale du plugin
+        aliases: [lc, lootc, lootch, lootche, lootches, lootchest, lootchests]
+        permission: lootchest.admin
