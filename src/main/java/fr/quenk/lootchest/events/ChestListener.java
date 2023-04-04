@@ -15,6 +15,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
@@ -94,4 +95,28 @@ public class ChestListener implements Listener {
         }
     }
 
+    @EventHandler
+    public void onBreakChest(BlockBreakEvent event){
+        Block block = event.getBlock();
+        Player player = event.getPlayer();
+        if(block.getType().toString().contains("CHEST")){
+            Location location = block.getLocation();
+            FileConfiguration chestLocConfig = LootChest.getInstance().getChestLocConfig();
+            if (chestLocConfig.contains("chest")) {
+                ConfigurationSection chests = chestLocConfig.getConfigurationSection("chest");
+                for (String key : chests.getKeys(false)) {
+                    ConfigurationSection chest = chests.getConfigurationSection(key);
+                    int x = chest.getInt("x");
+                    int y = chest.getInt("y");
+                    int z = chest.getInt("z");
+                    String world = chest.getString("world");
+                    if (x == location.getBlockX() && y == location.getBlockY() && z == location.getBlockZ() && world.equalsIgnoreCase(location.getWorld().getName())) {
+                        LootChest.getInstance().getChestLocConfig().set("chest." + key, null);
+                        LootChest.getInstance().saveChestLocConfig();
+                        player.sendMessage("§7[§a!§7] §aTu as détruit un coffre LootChest !");
+                    }
+                }
+            }
+        }
+    }
 }
