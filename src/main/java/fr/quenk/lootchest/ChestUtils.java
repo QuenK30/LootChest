@@ -18,8 +18,12 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 import java.io.File;
 import java.lang.reflect.Array;
@@ -119,14 +123,18 @@ public class ChestUtils {
             }
         }
 
-        // Générer un nombre aléatoire entre 0 et le total des chances
-        double random = Math.random() * totalChance;
-
-        // Parcourir les coffres et les chances de drop pour trouver le coffre sélectionné
-        double chanceCount = 0.0;
+        // Calculer le pourcentage de chaque coffre
         for (Map.Entry<String, Double> entry : chestChances.entrySet()) {
-            chanceCount += entry.getValue();
-            if (random < chanceCount) {
+            double percentage = entry.getValue() / totalChance * 100.0;
+            chestChances.put(entry.getKey(), percentage);
+        }
+
+        // Sélectionner un coffre aléatoire en fonction des pourcentages
+        double rand = Math.random() * 100.0;
+        double accum = 0.0;
+        for (Map.Entry<String, Double> entry : chestChances.entrySet()) {
+            accum += entry.getValue();
+            if (rand <= accum) {
                 return entry.getKey();
             }
         }
@@ -147,7 +155,7 @@ public class ChestUtils {
 
             for (String chestName : chests.getKeys(false)) {
                 ConfigurationSection chest = chests.getConfigurationSection(chestName);
-                double chance = chest.getInt("chance");
+                double chance = chest.getDouble("chance");
                 boolean special = chest.getBoolean("special");
                 if(special){
                     chestChances.put(chestName, chance);
@@ -156,19 +164,23 @@ public class ChestUtils {
             }
         }
 
-        // Générer un nombre aléatoire entre 0 et le total des chances
-        double random = Math.random() * totalChance;
-
-        // Parcourir les coffres et les chances de drop pour trouver le coffre sélectionné
-        double chanceCount = 0.0;
+        // Calculer le pourcentage de chaque coffre
         for (Map.Entry<String, Double> entry : chestChances.entrySet()) {
-            chanceCount += entry.getValue();
-            if (random < chanceCount) {
+            double percentage = entry.getValue() / totalChance * 100.0;
+            chestChances.put(entry.getKey(), percentage);
+        }
+
+        // Sélectionner un coffre aléatoire en fonction des pourcentages
+        double rand = Math.random() * 100.0;
+        double accum = 0.0;
+        for (Map.Entry<String, Double> entry : chestChances.entrySet()) {
+            accum += entry.getValue();
+            if (rand <= accum) {
                 return entry.getKey();
             }
         }
 
-        // Si on arrive ici, c'est qu'il y a eu un problème avec les taux de drop
+        // Si aucun coffre n'a été sélectionné, retourner null
         return null;
     }
 
@@ -270,17 +282,21 @@ public class ChestUtils {
                             int level = Integer.parseInt(enchantSplit[1]);
                             Enchantment enchant = Enchantment.getByKey(NamespacedKey.minecraft(enchantName));
                             if (enchant == null) {
-                                System.out.println("Enchantement invalide : " + enchantName);
+                                System.out.println("Enchantement non trouvé : " + enchantName);
+                                continue;
+                            }
+                            if (itemMeta instanceof EnchantmentStorageMeta) {
+                                EnchantmentStorageMeta enchantmentStorageMeta = (EnchantmentStorageMeta) itemMeta;
+                                if(item.getType() == Material.ENCHANTED_BOOK){
+                                    enchantmentStorageMeta.addStoredEnchant(enchant, level, true);
+                                    System.out.println("Enchantement ajouté : " + enchantName + " " + level);
+                                }
                             } else {
+
                                 itemMeta.addEnchant(enchant, level, true);
                                 System.out.println("Enchantement ajouté : " + enchantName + " (" + enchant.getKey().getKey() + ") " + level);
-
                             }
                         }
-                    }
-                    if(hideEnchantments){
-                        itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-                        System.out.println("Enchantements cachés");
                     }
                     // ajouter les attributs
                     for (String attributeString : attributes){
@@ -298,6 +314,10 @@ public class ChestUtils {
                         itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
                         System.out.println("Attributs cachés");
                     }
+                    if(hideEnchantments){
+                        itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+                        System.out.println("Enchantements cachés");
+                    }
                     // ajouter si l'item est indestructible
                     if (itemUnbreakable){
                         itemMeta.setUnbreakable(true);
@@ -307,6 +327,117 @@ public class ChestUtils {
                     item.setItemMeta(itemMeta);
                     // ajouter l'item à l'inventaire
                     inventory.setItem(position,item);
+                }
+            }
+
+            //vérifier si le coffre contient une potion
+            ConfigurationSection potionSpecial = LootChest.getInstance().getChestConfig().getConfigurationSection("potion");
+            // boucle pour ajouter les potions spéciales
+            if(potionSpecial != null){
+                for(String potionString : potionSpecial.getKeys(false)){
+                    String potionType = potionSpecial.getString(potionString + ".type");
+                    int potionPosition = potionSpecial.getInt(potionString + ".position");
+                    int potionAmount = potionSpecial.getInt(potionString + ".amount");
+                    String potionName = potionSpecial.getString(potionString + ".name");
+                    List<String> potionLore = potionSpecial.getStringList(potionString + ".lore");
+                    List<String> potionEffect = potionSpecial.getStringList(potionString + ".effect");
+                    String potionChest = potionSpecial.getString(potionString + ".chest");
+                    boolean hidePotionEffect = potionSpecial.getBoolean(potionString + ".particles");
+                    boolean hidePotionIcon = potionSpecial.getBoolean(potionString + ".icon");
+                    boolean hideEncantments = potionSpecial.getBoolean(potionString + ".hideenchantments");
+                    boolean hideAttributes = potionSpecial.getBoolean(potionString + ".hideattributes");
+                    List<String> attributes = potionSpecial.getStringList(potionString + ".attributes");
+                    List<String> enchants = potionSpecial.getStringList(potionString + ".enchantments");
+                    boolean hideEffect = potionSpecial.getBoolean(potionString + ".hideeffects");
+
+                    if(potionChest !=null && !potionChest.equals(chestName)){
+                        System.out.println("Le coffre n'est pas le bon");
+                        continue;
+                    }
+
+                    //créer la potion
+                    ItemStack potion = new ItemStack(Material.getMaterial(potionType), potionAmount);
+                    PotionMeta potionMeta = (PotionMeta) potion.getItemMeta();
+                    //ajouter le nom
+                    String name = ChatColor.translateAlternateColorCodes('&', potionName);
+                    potionMeta.setDisplayName(name);
+                    //ajouter la lore
+                    List<String> lore = new ArrayList<>();
+                    for (String loreString : potionLore){
+                        String loreName = ChatColor.translateAlternateColorCodes('&', loreString);
+                        lore.add(loreName);
+                    }
+                    potionMeta.setLore(lore);
+                    //ajouter les effets
+                    for (String effectString : potionEffect){
+                        String[] effectSplit = effectString.split(";");
+                        if (effectSplit.length == 3) {
+                            String effectName = effectSplit[0];
+                            int level = Integer.parseInt(effectSplit[1]);
+                            int duration = Integer.parseInt(effectSplit[2]);
+                            PotionEffectType effect = PotionEffectType.getByName(effectName);
+                            System.out.println("Effet : " + effectName + " " + level + " " + duration);
+                            if (effect == null) {
+                                System.out.println("Effet invalide : " + effectName);
+                            } else {
+                                potionMeta.addCustomEffect(new PotionEffect(effect, duration, level,true,hidePotionEffect,hidePotionIcon), true);
+                                System.out.println("Effet ajouté : " + effectName + " " + level + " " + duration + " " + hidePotionEffect + " " + hidePotionIcon);
+                            }
+                        }
+                    }
+
+                    //ajouter les enchantements
+                    for (String enchantString : enchants){
+                        String[] enchantSplit = enchantString.split(";");
+                        if (enchantSplit.length == 2) {
+                            String enchantName = enchantSplit[0];
+                            int level = Integer.parseInt(enchantSplit[1]);
+                            Enchantment enchant = Enchantment.getByKey(NamespacedKey.minecraft(enchantName));
+                            if (enchant == null) {
+                                System.out.println("Enchantement invalide : " + enchantName);
+                            } else {
+                                potionMeta.addEnchant(enchant, level, true);
+                                System.out.println("Enchantement ajouté : " + enchantName + " (" + enchant.getKey().getKey() + ") " + level);
+
+                            }
+                        }
+                    }
+
+                    //ajouter les attributs
+                    for (String attributeString : attributes){
+                        String[] attributeSplit = attributeString.split(";");
+                        if (attributeSplit.length == 2) {
+                            Attribute attribute = Attribute.valueOf(attributeSplit[0]);
+                            double value = Double.parseDouble(attributeSplit[1]);
+                            AttributeModifier modifier = new AttributeModifier(UUID.randomUUID(), attribute.name(), value, AttributeModifier.Operation.ADD_NUMBER);
+                            potionMeta.addAttributeModifier(attribute, modifier);
+                            // mettre invisible l'attribut
+                            System.out.println("Attribut ajouté: " + attributeSplit[0] + " " + attributeSplit[1]);
+                        }
+                    }
+
+
+                    if (hideAttributes){
+                        potionMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+                        System.out.println("Attributs cachés");
+                    }
+
+
+                    if (hideEncantments){
+                        potionMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+                        System.out.println("Enchantements cachés");
+                    }
+                    if (hideEffect){
+                        potionMeta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
+                        System.out.println("Effets cachés");
+                    }
+
+
+                    //ajouter les meta à la potion
+                    potion.setItemMeta(potionMeta);
+                    //ajouter la potion à l'inventaire
+                    inventory.setItem(potionPosition,potion);
+
                 }
             }
 
@@ -329,6 +460,8 @@ public class ChestUtils {
             ConfigurationSection chests = chestConfig.getConfigurationSection("chest");
             ConfigurationSection chest = chests.getConfigurationSection(chestName);
             List<String> items = chest.getStringList("items");
+
+
 
             // Créer l'inventaire
             Inventory inventory = Bukkit.createInventory(null, 27, "§aCoffre aléatoire");
@@ -361,6 +494,14 @@ public class ChestUtils {
                 }
             }
             System.out.println("Le coffre aléatoire est: " + chestName);
+            int chance = chest.getInt("chance");
+            if(chance <= 5){ //Si la chance est inférieur ou égale a 5
+                for(Player players : Bukkit.getOnlinePlayers()){
+                    players.playSound(player.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 1, 1);
+                }
+                player.playSound(player.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 1, 1);
+            }
+            player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 2);
             // Vérifier si le coffre a un item spécial ou non
             ConfigurationSection itemSpecial = LootChest.getInstance().getChestConfig().getConfigurationSection("itemspecial");
             // boucle pour ajouter les items spéciaux
@@ -409,10 +550,6 @@ public class ChestUtils {
                                 System.out.println("Enchantement ajouté : " + enchantName + " (" + enchant.getKey().getKey() + ") " + level);
 
                             }
-                            if(LootChest.getInstance().getConfig().getBoolean("enchantmentsinvisible")){
-                                itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-                                System.out.println("Enchantements cachés");
-                            }
                         }
                     }
                     // ajouter les attributs
@@ -425,16 +562,28 @@ public class ChestUtils {
                             itemMeta.addAttributeModifier(attribute, modifier);
                             // mettre invisible l'attribut
                             System.out.println("Attribut ajouté: " + attributeSplit[0] + " " + attributeSplit[1]);
-                            if(LootChest.getInstance().getConfig().getBoolean("attributesinvisible")){
-                                itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
-                                System.out.println("Attributs cachés");
-                            }
                         }
                     }
+                    boolean hideAttributes = itemSpecial.getBoolean(itemString + ".attributesinvisible");
+                    boolean hideEnchantments = itemSpecial.getBoolean(itemString + ".enchantmentsinvisible");
+                    if(hideAttributes){
+                        itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+                        System.out.println("Attributs cachés");
+                    }
+                    if(hideEnchantments){
+                        itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+                        System.out.println("Enchantements cachés");
+                    }
+
                     // ajouter si l'item est indestructible
                     if (itemUnbreakable){
                         itemMeta.setUnbreakable(true);
                     }
+
+
+
+
+                    itemMeta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
                     // ajouter les meta à l'item
                     item.setItemMeta(itemMeta);
                     // ajouter l'item à l'inventaire
@@ -442,8 +591,111 @@ public class ChestUtils {
                 }
             }
 
-            for(Player players : Bukkit.getOnlinePlayers()){
-                players.playSound(player.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 1, 1);
+            //vérifier si le coffre contient une potion
+            ConfigurationSection potionSpecial = LootChest.getInstance().getChestConfig().getConfigurationSection("potion");
+            // boucle pour ajouter les potions spéciales
+            if(potionSpecial != null){
+                for(String potionString : potionSpecial.getKeys(false)){
+                    String potionType = potionSpecial.getString(potionString + ".type");
+                    int potionPosition = potionSpecial.getInt(potionString + ".position");
+                    int potionAmount = potionSpecial.getInt(potionString + ".amount");
+                    String potionName = potionSpecial.getString(potionString + ".name");
+                    List<String> potionLore = potionSpecial.getStringList(potionString + ".lore");
+                    List<String> potionEffect = potionSpecial.getStringList(potionString + ".effect");
+                    String potionChest = potionSpecial.getString(potionString + ".chest");
+                    boolean hideEncantments = potionSpecial.getBoolean(potionString + ".hideenchantments");
+                    boolean hideAttributes = potionSpecial.getBoolean(potionString + ".hideattributes");
+                    List<String> attributes = potionSpecial.getStringList(potionString + ".attributes");
+                    List<String> enchants = potionSpecial.getStringList(potionString + ".enchantments");
+                    boolean hideEffects = potionSpecial.getBoolean(potionString + ".hideeffects");
+
+                    if(potionChest !=null && !potionChest.equals(chestName)){
+                        System.out.println("Le coffre n'est pas le bon");
+                        continue;
+                    }
+
+                    //créer la potion
+                    ItemStack potion = new ItemStack(Material.getMaterial(potionType), potionAmount);
+                    PotionMeta potionMeta = (PotionMeta) potion.getItemMeta();
+                    //ajouter le nom
+                    String name = ChatColor.translateAlternateColorCodes('&', potionName);
+                    potionMeta.setDisplayName(name);
+                    //ajouter la lore
+                    List<String> lore = new ArrayList<>();
+                    for (String loreString : potionLore){
+                        String loreName = ChatColor.translateAlternateColorCodes('&', loreString);
+                        lore.add(loreName);
+                    }
+                    potionMeta.setLore(lore);
+                    //ajouter les effets
+                    for (String effectString : potionEffect){
+                        String[] effectSplit = effectString.split(";");
+                        if (effectSplit.length == 2) {
+                            String effectName = effectSplit[0];
+                            int level = Integer.parseInt(effectSplit[1]);
+                            int duration = Integer.parseInt(effectSplit[2]);
+                            PotionEffectType effect = PotionEffectType.getByName(effectName);
+                            if (effect == null) {
+                                System.out.println("Effet invalide : " + effectName);
+                            } else {
+                                potionMeta.addCustomEffect(new PotionEffect(effect, duration, level), true);
+                                System.out.println("Effet ajouté : " + effectName + " " + level + " " + duration);
+                            }
+                        }
+                    }
+                    //ajouter les enchantements
+                    for (String enchantString : enchants){
+                        String[] enchantSplit = enchantString.split(";");
+                        if (enchantSplit.length == 2) {
+                            String enchantName = enchantSplit[0];
+                            int level = Integer.parseInt(enchantSplit[1]);
+                            Enchantment enchant = Enchantment.getByKey(NamespacedKey.minecraft(enchantName));
+                            if (enchant == null) {
+                                System.out.println("Enchantement invalide : " + enchantName);
+                            } else {
+                                potionMeta.addEnchant(enchant, level, true);
+                                System.out.println("Enchantement ajouté : " + enchantName + " (" + enchant.getKey().getKey() + ") " + level);
+
+                            }
+                        }
+                    }
+
+                    //ajouter les attributs
+                    for (String attributeString : attributes){
+                        String[] attributeSplit = attributeString.split(";");
+                        if (attributeSplit.length == 2) {
+                            Attribute attribute = Attribute.valueOf(attributeSplit[0]);
+                            double value = Double.parseDouble(attributeSplit[1]);
+                            AttributeModifier modifier = new AttributeModifier(UUID.randomUUID(), attribute.name(), value, AttributeModifier.Operation.ADD_NUMBER);
+                            potionMeta.addAttributeModifier(attribute, modifier);
+                            // mettre invisible l'attribut
+                            System.out.println("Attribut ajouté: " + attributeSplit[0] + " " + attributeSplit[1]);
+                        }
+                    }
+
+
+                    if (hideAttributes){
+                        potionMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+                        System.out.println("Attributs cachés");
+                    }
+
+                    if (hideEncantments){
+                        potionMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+                        System.out.println("Enchantements cachés");
+                    }
+
+                    if (hideEffects){
+                        potionMeta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
+                        System.out.println("Effets cachés");
+                    }
+
+
+
+                    potion.setItemMeta(potionMeta);
+                    // ajouter la potion à l'inventaire
+                    inventory.setItem(potionPosition,potion);
+
+                }
             }
 
             // Ouvrir l'inventaire
@@ -458,31 +710,53 @@ public class ChestUtils {
 
         // Récupération de la liste des coffres
         ConfigurationSection chestsSection = LootChest.getInstance().getChestConfig().getConfigurationSection("itemspecial");
-        if(chestsSection != null){
-            for(String iKey : chestsSection.getKeys(false)){
-                ConfigurationSection iSection = chestsSection.getConfigurationSection(iKey);
-                if(iSection != null){
-                    String name = iSection.getString("name");
-                    String type = iSection.getString("type");
-                    int position = iSection.getInt("position");
-                    String chestName = iSection.getString("chest");
-                    List<String> lore = iSection.getStringList("lore");
-                    List<String> enchants = iSection.getStringList("enchants");
-                    boolean unbreakable = iSection.getBoolean("unbreakable");
-                    int amount = iSection.getInt("amount");
+        ConfigurationSection potionSection = LootChest.getInstance().getChestConfig().getConfigurationSection("potion");
+        if(chestsSection != null && potionSection != null) {
+            for (String iKey : chestsSection.getKeys(false)) {
+                for (String pKey : potionSection.getKeys(false)) {
+                    ConfigurationSection iSection = chestsSection.getConfigurationSection(iKey);
+                    ConfigurationSection pSection = potionSection.getConfigurationSection(pKey);
+                    if (iSection != null && pSection != null) {
+                        String name = iSection.getString("name");
+                        String type = iSection.getString("type");
+                        int position = iSection.getInt("position");
+                        String chestName = iSection.getString("chest");
+                        List<String> lore = iSection.getStringList("lore");
+                        List<String> enchants = iSection.getStringList("enchants");
+                        boolean unbreakable = iSection.getBoolean("unbreakable");
+                        int amount = iSection.getInt("amount");
 
-                    // Construction du message à afficher
-                    StringBuilder messageBuilder = new StringBuilder();
-                    messageBuilder.append("§6- §e").append(name).append(" (").append(type).append(") : ");
-                    messageBuilder.append("§6- §e").append("Position : ").append(position).append(" ");
-                    messageBuilder.append("§6- §e").append("Coffre : ").append(chestName).append(" ");
-                    messageBuilder.append("§6- §e").append("Lore : ").append(lore).append(" ");
-                    messageBuilder.append("§6- §e").append("Enchantements : ").append(enchants).append(" ");
-                    messageBuilder.append("§6- §e").append("Unbreakable : ").append(unbreakable).append(" ");
-                    messageBuilder.append("§6- §e").append("Quantité : ").append(amount).append(" ");
-                    String messageWithColor = ChatColor.translateAlternateColorCodes('&', messageBuilder.toString());
-                    player.sendMessage(messageWithColor);
+                        //potion
+                        String potionName = pSection.getString("name");
+                        String potionType = pSection.getString("type");
+                        int potionPosition = pSection.getInt("position");
+                        String potionChestName = pSection.getString("chest");
+                        List<String> potionLore = pSection.getStringList("lore");
+                        List<String> potionEnchants = pSection.getStringList("effect");
+                        int potionAmount = pSection.getInt("amount");
 
+                        // Construction du message à afficher
+                        StringBuilder messageBuilder = new StringBuilder();
+                        messageBuilder.append("§6- §e").append(name).append(" (").append(type).append(") : ");
+                        messageBuilder.append("§6- §e").append("Position : ").append(position).append(" ");
+                        messageBuilder.append("§6- §e").append("Coffre : ").append(chestName).append(" ");
+                        messageBuilder.append("§6- §e").append("Lore : ").append(lore).append(" ");
+                        messageBuilder.append("§6- §e").append("Enchantements : ").append(enchants).append(" ");
+                        messageBuilder.append("§6- §e").append("Unbreakable : ").append(unbreakable).append(" ");
+                        messageBuilder.append("§6- §e").append("Quantité : ").append(amount).append("\n");
+
+                        //potion
+                        messageBuilder.append("§6- §e").append(potionName).append(" (").append(potionType).append(") : ");
+                        messageBuilder.append("§6- §e").append("Position : ").append(potionPosition).append(" ");
+                        messageBuilder.append("§6- §e").append("Coffre : ").append(potionChestName).append(" ");
+                        messageBuilder.append("§6- §e").append("Lore : ").append(potionLore).append(" ");
+                        messageBuilder.append("§6- §e").append("Effets : ").append(potionEnchants).append(" ");
+                        messageBuilder.append("§6- §e").append("Quantité : ").append(potionAmount).append("\n");
+
+                        String messageWithColor = ChatColor.translateAlternateColorCodes('&', messageBuilder.toString());
+                        player.sendMessage(messageWithColor);
+
+                    }
                 }
             }
         }

@@ -1,3 +1,28 @@
+potion:
+  cheat_potion:
+    effect:
+      - "SPEED;1;1000" #Effet;Niveau;Durée
+      - "JUMP;1;1000"
+    lore:
+      - "&7Cet item est spécial"
+      - "&7Il ne peut être obtenu que"
+      - "&7par un joueur qui a un block de bedrock"
+      - "&7dans son inventaire"
+    name: "Potion cheaté"
+    type: LINGERING_POTION #Type de l'item (SPLASH_POTION ou LINGERING_POTION pour les potions splash ou lingering)
+    position: 9 #Position de l'item dans le coffre
+    chest: "chest_one" #Nom du coffre où l'item doit être placé
+    amount: 1 #Quantité
+    icon: false #Si l'item doit être affiché dans l'interface
+    particles: false #Si les particules doivent être affichées
+    hideenchantments: true #Si les enchantements doivent être cachés
+    hideattributes: true #Si les attributs doivent être cachés
+    hideeffects: true #Si les effets doivent être cachés
+    enchantments:
+      - "knockback;2" #Enchantement;Niveau
+      - "sharpness;10"
+    attributes:
+      - "GENERIC_MOVEMENT_SPEED;0.08" #Attribut;Valeur
 itemspecial: #Une liste d'items spéciaux
   diamond_axe: #id de l'item
     type: DIAMOND_AXE #Type de l'item
@@ -33,6 +58,58 @@ itemspecial: #Une liste d'items spéciaux
       - "GENERIC_MOVEMENT_SPEED;80"
     unbreakable: true
     amount: 1
+    attributesinvisible: true #Si les attributs sont invisibles ou non
+    enchantmentsinvisible: true #Si les enchantements sont invisibles ou non
+  enchanted_book: #id de l'item
+    type: ENCHANTED_BOOK #Type de l'item
+    position: 12 #Position de l'item dans le coffre
+    name: "&5&kA&r &5Livre enchanté &kA&r" #Nom de l'item
+    chest: "chest_one" #Nom du coffre où l'item doit être placé
+    lore: #Une liste de lignes de lore
+      - "&o&dCe livre vous permet d'avoir n'importe quel enchantement !"
+    enchantments:
+      - "aqua_infinity;1"
+      - "bane_of_arthropods;5"
+      - "blast_protection;4"
+      - "channeling;1"
+      - "binding_curse;1"
+      - "vanishing_curse;1"
+      - "depth_strider;3"
+      - "efficiency;5"
+      - "feather_falling;4"
+      - "fire_aspect;2"
+      - "fire_protection;4"
+      - "flame;1"
+      - "fortune;3"
+      - "frost_walker;2"
+      - "impaling;5"
+      - "infinity;1"
+      - "knockback;2"
+      - "looting;3"
+      - "loyalty;3"
+      - "luck_of_the_sea;3"
+      - "lure;3"
+      - "mending;1"
+      - "multishot;1"
+      - "piercing;4"
+      - "power;5"
+      - "projectile_protection;4"
+      - "protection;4"
+      - "punch;2"
+      - "quick_charge;3"
+      - "respiration;3"
+      - "riptide;3"
+      - "sharpness;5"
+      - "silk_touch;1"
+      - "smite;5"
+      - "soul_speed;3"
+      - "sweeping;3"
+      - "swift_sneak;5"
+      - "thorns;3"
+      - "unbreaking;3"
+    attributes:
+    unbreakable: true #Si l'item est indestructible ou non
+    amount: 1 #Quantité
     attributesinvisible: true #Si les attributs sont invisibles ou non
     enchantmentsinvisible: true #Si les enchantements sont invisibles ou non
 chest:
