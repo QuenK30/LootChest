@@ -289,6 +289,7 @@ public class ChestUtils {
                                 EnchantmentStorageMeta enchantmentStorageMeta = (EnchantmentStorageMeta) itemMeta;
                                 if(item.getType() == Material.ENCHANTED_BOOK){
                                     enchantmentStorageMeta.addStoredEnchant(enchant, level, true);
+                                    enchantmentStorageMeta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
                                     System.out.println("Enchantement ajouté : " + enchantName + " " + level);
                                 }
                             } else {
@@ -312,11 +313,11 @@ public class ChestUtils {
                     }
                     if(hideAttributes){
                         itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
-                        System.out.println("Attributs cachés");
+                        System.out.println("Attributs cachés sur: " + itemString);
                     }
                     if(hideEnchantments){
                         itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-                        System.out.println("Enchantements cachés");
+                        System.out.println("Enchantements cachés sur: " + itemString);
                     }
                     // ajouter si l'item est indestructible
                     if (itemUnbreakable){
@@ -478,7 +479,8 @@ public class ChestUtils {
                         // si le nombre d'item est égal à 3, alors c'est un item avec un nom custom
                         ItemStack item = new ItemStack(Material.getMaterial(itemSplit[0]), Integer.parseInt(itemSplit[1]));
                         ItemMeta itemMeta = item.getItemMeta();
-                        itemMeta.setDisplayName(itemSplit[2]);
+                        String name = ChatColor.translateAlternateColorCodes('&', itemSplit[2]);
+                        itemMeta.setDisplayName(name);
                         item.setItemMeta(itemMeta);
                         inventory.setItem(inventory.firstEmpty(),item);
                     }else{
@@ -486,7 +488,8 @@ public class ChestUtils {
                             // si le nombre d'item est égal à 4, alors c'est un item avec un nom custom et une texture custom
                             ItemStack item = getCustomTextureHead(itemSplit[3], Integer.parseInt(itemSplit[1]));
                             ItemMeta itemMeta = item.getItemMeta();
-                            itemMeta.setDisplayName(itemSplit[2]);
+                            String name = ChatColor.translateAlternateColorCodes('&', itemSplit[2]);
+                            itemMeta.setDisplayName(name);
                             item.setItemMeta(itemMeta);
                             inventory.setItem(inventory.firstEmpty(),item);
                         }
@@ -497,7 +500,7 @@ public class ChestUtils {
             int chance = chest.getInt("chance");
             if(chance <= 5){ //Si la chance est inférieur ou égale a 5
                 for(Player players : Bukkit.getOnlinePlayers()){
-                    players.playSound(player.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 1, 1);
+                    players.playSound(players.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 1, 1);
                 }
                 player.playSound(player.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 1, 1);
             }
@@ -544,11 +547,20 @@ public class ChestUtils {
                             int level = Integer.parseInt(enchantSplit[1]);
                             Enchantment enchant = Enchantment.getByKey(NamespacedKey.minecraft(enchantName));
                             if (enchant == null) {
-                                System.out.println("Enchantement invalide : " + enchantName);
+                                System.out.println("Enchantement non trouvé : " + enchantName);
+                                continue;
+                            }
+                            if (itemMeta instanceof EnchantmentStorageMeta) {
+                                EnchantmentStorageMeta enchantmentStorageMeta = (EnchantmentStorageMeta) itemMeta;
+                                if(item.getType() == Material.ENCHANTED_BOOK){
+                                    enchantmentStorageMeta.addStoredEnchant(enchant, level, true);
+                                    enchantmentStorageMeta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
+                                    System.out.println("Enchantement ajouté : " + enchantName + " " + level);
+                                }
                             } else {
+
                                 itemMeta.addEnchant(enchant, level, true);
                                 System.out.println("Enchantement ajouté : " + enchantName + " (" + enchant.getKey().getKey() + ") " + level);
-
                             }
                         }
                     }
@@ -568,11 +580,11 @@ public class ChestUtils {
                     boolean hideEnchantments = itemSpecial.getBoolean(itemString + ".enchantmentsinvisible");
                     if(hideAttributes){
                         itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
-                        System.out.println("Attributs cachés");
+                        System.out.println("Attributs cachés sur: " + itemString);
                     }
                     if(hideEnchantments){
                         itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-                        System.out.println("Enchantements cachés");
+                        System.out.println("Enchantements cachés sur: " + itemString);
                     }
 
                     // ajouter si l'item est indestructible
@@ -585,6 +597,7 @@ public class ChestUtils {
 
                     itemMeta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
                     // ajouter les meta à l'item
+
                     item.setItemMeta(itemMeta);
                     // ajouter l'item à l'inventaire
                     inventory.setItem(position,item);
@@ -630,7 +643,7 @@ public class ChestUtils {
                     //ajouter les effets
                     for (String effectString : potionEffect){
                         String[] effectSplit = effectString.split(";");
-                        if (effectSplit.length == 2) {
+                        if (effectSplit.length == 3) {
                             String effectName = effectSplit[0];
                             int level = Integer.parseInt(effectSplit[1]);
                             int duration = Integer.parseInt(effectSplit[2]);
@@ -672,6 +685,7 @@ public class ChestUtils {
                             System.out.println("Attribut ajouté: " + attributeSplit[0] + " " + attributeSplit[1]);
                         }
                     }
+
 
 
                     if (hideAttributes){

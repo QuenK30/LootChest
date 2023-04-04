@@ -1,5 +1,5 @@
 # LootChest
-LootChest is a Minecraft plugin (1.19) created by QuenK for the survival server of Brickin_Clackman.
+LootChest is a Minecraft plugin (1.19) created by QuenK for SURVIVAL, a survival server of Brickin_Clackman.
 
 ## How to use
 1. Download the plugin.
