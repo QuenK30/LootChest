@@ -114,6 +114,9 @@ public class ChestListener implements Listener {
                         LootChest.getInstance().getChestLocConfig().set("chest." + key, null);
                         LootChest.getInstance().saveChestLocConfig();
                         player.sendMessage("§7[§a!§7] §aTu as détruit un coffre LootChest !");
+                        //drop natrually
+                        event.setDropItems(false);
+                        block.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(Material.CHEST));
                     }
                 }
             }
