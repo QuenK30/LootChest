@@ -14,7 +14,6 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -26,7 +25,6 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import java.io.File;
-import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.util.*;
 
@@ -50,7 +48,7 @@ public class ChestUtils {
     }
 
     public void getChestList(Player player) {
-        player.sendMessage("§7[§a!§7] §aLootChest §7- §aListe des coffres :");
+        player.sendMessage("§7[§a!§7] §aLootChest §7- §aList of chest :");
 
         // Récupération de la liste des coffres
         ConfigurationSection chestsSection = LootChest.getInstance().getChestConfig().getConfigurationSection("chest");
@@ -68,7 +66,7 @@ public class ChestUtils {
                     // Construction du message à afficher
                     StringBuilder messageBuilder = new StringBuilder();
                     if(special != null && special.equalsIgnoreCase("true")) {
-                        messageBuilder.append("§6- §e").append(chestName).append(" ").append(chance).append("%").append(" (§aSpécial§e) : ");
+                        messageBuilder.append("§6- §e").append(chestName).append(" ").append(chance).append("%").append(" (§aSpecial§e) : ");
                     } else {
                         messageBuilder.append("§6- §e").append(chestName).append(" ").append(chance).append("%").append(" : ");
                     }
@@ -190,7 +188,7 @@ public class ChestUtils {
         String chestName = getRandomChestName();
 
         if(chestName == null) {
-            player.sendMessage("§cErreur : aucun coffre n'a été trouvé");
+            player.sendMessage("§cError : No chest found");
             return null;
         }
 
@@ -237,7 +235,6 @@ public class ChestUtils {
                     }
                 }
             }
-            System.out.println("Le coffre aléatoire est: " + chestName);
             // Vérifier si le coffre a un item spécial ou non
             ConfigurationSection itemSpecial = LootChest.getInstance().getChestConfig().getConfigurationSection("itemspecial");
             // boucle pour ajouter les items spéciaux
@@ -257,7 +254,6 @@ public class ChestUtils {
                     boolean hideAttributes = itemSpecial.getBoolean(itemString + ".attributesinvisible");
                     boolean hideEnchantments = itemSpecial.getBoolean(itemString + ".enchantmentsinvisible");
                     if(coffre !=null && !coffre.equals(chestName)){
-                        System.out.println("Le coffre n'est pas le bon");
                         continue;
                     }
                     // créer l'item
@@ -275,14 +271,14 @@ public class ChestUtils {
                     itemMeta.setLore(lore);
                     // ajouter les enchantements
                     for (String enchantString : itemEnchant){
-                        System.out.println("Enchantement : " + enchantString);
+
                         String[] enchantSplit = enchantString.split(";");
                         if (enchantSplit.length == 2) {
                             String enchantName = enchantSplit[0];
                             int level = Integer.parseInt(enchantSplit[1]);
                             Enchantment enchant = Enchantment.getByKey(NamespacedKey.minecraft(enchantName));
                             if (enchant == null) {
-                                System.out.println("Enchantement non trouvé : " + enchantName);
+
                                 continue;
                             }
                             if (itemMeta instanceof EnchantmentStorageMeta) {
@@ -290,12 +286,12 @@ public class ChestUtils {
                                 if(item.getType() == Material.ENCHANTED_BOOK){
                                     enchantmentStorageMeta.addStoredEnchant(enchant, level, true);
                                     enchantmentStorageMeta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
-                                    System.out.println("Enchantement ajouté : " + enchantName + " " + level);
+
                                 }
                             } else {
 
                                 itemMeta.addEnchant(enchant, level, true);
-                                System.out.println("Enchantement ajouté : " + enchantName + " (" + enchant.getKey().getKey() + ") " + level);
+
                             }
                         }
                     }
@@ -308,16 +304,16 @@ public class ChestUtils {
                             AttributeModifier modifier = new AttributeModifier(UUID.randomUUID(), attribute.name(), value, AttributeModifier.Operation.ADD_NUMBER);
                             itemMeta.addAttributeModifier(attribute, modifier);
                             // mettre invisible l'attribut
-                            System.out.println("Attribut ajouté: " + attributeSplit[0] + " " + attributeSplit[1]);
+
                         }
                     }
                     if(hideAttributes){
                         itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
-                        System.out.println("Attributs cachés sur: " + itemString);
+
                     }
                     if(hideEnchantments){
                         itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-                        System.out.println("Enchantements cachés sur: " + itemString);
+
                     }
                     // ajouter si l'item est indestructible
                     if (itemUnbreakable){
@@ -352,7 +348,6 @@ public class ChestUtils {
                     boolean hideEffect = potionSpecial.getBoolean(potionString + ".hideeffects");
 
                     if(potionChest !=null && !potionChest.equals(chestName)){
-                        System.out.println("Le coffre n'est pas le bon");
                         continue;
                     }
 

@@ -21,10 +21,10 @@ public class LCCMD implements CommandExecutor {
             if(player.hasPermission("lootchest.admin")){
                 ChestUtils chestUtils = new ChestUtils();
                 if(args.length == 0) {
-                    player.sendMessage("§7[§a!§7] §aLootChest §7- §aCommandes :");
-                    player.sendMessage("§7[§a!§7] §a/lootchest §7- §aAffiche les commandes");
-                    player.sendMessage("§7[§a!§7] §a/lootchest list §7- §aAffiche la liste des coffres");
-                    player.sendMessage("§7[§a!§7] §a/lootchest give §7- §aDonne un coffre du système LootChest");
+                    player.sendMessage("§7[§a!§7] §aLootChest §7- §aCommands :");
+                    player.sendMessage("§7[§a!§7] §a/lootchest §7- §aShows the commands");
+                    player.sendMessage("§7[§a!§7] §a/lootchest list §7- §aShows the list of the chests");
+                    player.sendMessage("§7[§a!§7] §a/lootchest give §7- §aGives you a LootChest");
                 }else if(args.length == 1){
                     if(args[0].equalsIgnoreCase("list")){
                         chestUtils.getChestList(player);
@@ -34,9 +34,9 @@ public class LCCMD implements CommandExecutor {
                         itemMeta.setDisplayName("§aCoffre LootChest");
                         itemStack.setItemMeta(itemMeta);
                         player.getInventory().addItem(itemStack);
-                        player.sendMessage("§7[§a!§7] §aTu as reçu un coffre LootChest ! Place le pour l'activer !");
+                        player.sendMessage("§7[§a!§7] §aYou have received a LootChest !");
                     }else{
-                        player.sendMessage("§7[§c!§7] §cCette commande n'existe pas !");
+                        player.sendMessage("§7[§c!§7] §cUnknown command !");
                     }
                 }else{
                     if(args[0].equalsIgnoreCase("list") && args[1].equalsIgnoreCase("items")) {
@@ -44,10 +44,10 @@ public class LCCMD implements CommandExecutor {
                     }
                 }
             }else{
-                player.sendMessage("§7[§c!§7] §cTu n'as pas la permission d'utiliser cette commande !");
+                player.sendMessage("§7[§c!§7] §cYou don't have the permission to use this command !");
             }
         }else {
-            sender.sendMessage("Tu dois être en jeu pour utiliser cette commande !");
+            sender.sendMessage("§7[§c!§7] §cYou must be a player to use this command !");
         }
         return false;
     }

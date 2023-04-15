@@ -44,18 +44,16 @@ public class ChestListener implements Listener {
                         boolean open = chest.getBoolean("open");
                         if (x == location.getBlockX() && y == location.getBlockY() && z == location.getBlockZ() && world.equalsIgnoreCase(location.getWorld().getName())) {
                             if(open){
-                                player.sendMessage("§7[§c!§7] §cCe coffre a déjà été ouvert !");
+                                player.sendMessage("§7[§c!§7] §cThis chest is already open !");
                                 return;
                             }
                             if(player.getInventory().getItemInMainHand().getType() == Material.BEDROCK){
                                 player.openInventory(chestUtils.openSpecialRandomChest(player));
-                                System.out.println("Special chest opened at location " + location + " with ID " + key);
                                 LootChest.getInstance().getChestLocConfig().set("chest." + key + ".open", true);
                                 event.setCancelled(true);
                                 return; // Sortir de la boucle for dès qu'un coffre est ouvert
                             }
                             player.openInventory(chestUtils.openRandomChest(player));
-                            System.out.println("Chest opened at location " + location+ " with ID " + key);
                             LootChest.getInstance().getChestLocConfig().set("chest." + key + ".open", true);
                             event.setCancelled(true);
                             return; // Sortir de la boucle for dès qu'un coffre est ouvert
@@ -91,7 +89,7 @@ public class ChestListener implements Listener {
                 LootChest.getInstance().getChestLocConfig().set("chest." + i + ".open", false);
                 LootChest.getInstance().saveChestLocConfig();
             }
-            player.sendMessage("§7[§a!§7] §aTu as placé un coffre LootChest !");
+            player.sendMessage("§7[§a!§7] §aYou have placed a LootChest at location !");
         }
     }
 
@@ -113,7 +111,7 @@ public class ChestListener implements Listener {
                     if (x == location.getBlockX() && y == location.getBlockY() && z == location.getBlockZ() && world.equalsIgnoreCase(location.getWorld().getName())) {
                         LootChest.getInstance().getChestLocConfig().set("chest." + key, null);
                         LootChest.getInstance().saveChestLocConfig();
-                        player.sendMessage("§7[§a!§7] §aTu as détruit un coffre LootChest !");
+                        player.sendMessage("§7[§a!§7] §aYou have broken a LootChest !");
                         //drop natrually
                         event.setDropItems(false);
                         block.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(Material.CHEST));
